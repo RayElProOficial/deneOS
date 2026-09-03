@@ -63,7 +63,6 @@ public class VersionInfo
             label1.Text += "Creating folder structure...\n";
             Directory.CreateDirectory(@"C:\DENEOS\");
             Directory.CreateDirectory(@"C:\DENEOS\core\");
-            Directory.CreateDirectory(@"C:\DENEOS\desktop\");
             Directory.CreateDirectory(@"C:\DENEOS\lang");
             Directory.CreateDirectory(@"C:\DENEOS\sysconf\");
             Directory.CreateDirectory(@"C:\DENEOS\systemApps\");
@@ -72,6 +71,7 @@ public class VersionInfo
             Directory.CreateDirectory(@"C:\DNUSR\");
             Directory.CreateDirectory(@"C:\DNUSR\Documents\");
             Directory.CreateDirectory(@"C:\DNUSR\Downloads\");
+            Directory.CreateDirectory(@"C:\DNUSR\Desktop\");
 
             Log("Downloading languages");
             string espUrl = "https://repoficialx.xyz/deneOS/api/es.json";
@@ -282,30 +282,42 @@ foreach (var dep in versionInfo.dependencies)
             label1.Refresh();
             Application.DoEvents();
         }
-        async Task DownloadFileAsync(string url, string path, Action<int> onProgress)
+        private async Task DownloadFileAsync(string url, string path, Action<int> onProgress)
+{
+    using HttpClient client = new HttpClient();
+    // Aumentar timeout para descargas largas
+    client.Timeout = TimeSpan.FromMinutes(10);
+    
+    using HttpResponseMessage response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+    response.EnsureSuccessStatusCode();
+    
+    // Usar Content-Length si está disponible, sino determinar por lectura
+    long total = response.Content.Headers.ContentLength ?? -1;
+    
+    using Stream stream = await response.Content.ReadAsStreamAsync();
+    using FileStream file = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
+    
+    byte[] buffer = new byte[8192];
+    long read = 0L;
+    int bytes;
+    
+    while ((bytes = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+    {
+        await file.WriteAsync(buffer, 0, bytes);
+        read += bytes;
+        
+        // Solo calcular porcentaje si Content-Length es válido
+        if (total > 0)
         {
-            using var client = new HttpClient();
-            using var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
-            response.EnsureSuccessStatusCode();
-
-            var total = response.Content.Headers.ContentLength ?? 1L;
-
-            using var stream = await response.Content.ReadAsStreamAsync();
-            using var file = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
-
-            var buffer = new byte[8192];
-            long read = 0;
-            int bytes;
-
-            while ((bytes = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
-            {
-                await file.WriteAsync(buffer, 0, bytes);
-                read += bytes;
-
-                int percent = (int)(read * 100 / total);
-                onProgress(percent);
-            }
+            int percent = (int)(read * 100 / total);
+            onProgress(percent);
         }
+    }
+    
+    // Notificar 100% cuando se complete
+    onProgress(100);
 
     }
+}
+
 }
