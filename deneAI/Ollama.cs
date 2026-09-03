@@ -28,7 +28,8 @@ namespace deneAI
                 lblStatus.Text = "✅ Ollama already installed.";
                 installed = true;
                 await Task.Delay(2000);
-                Close();
+                Hide();
+                new Form1().Show();
                 return;
             }
 
@@ -58,7 +59,8 @@ namespace deneAI
                 lblStatus.Text = "✅ Ollama installed successfully.";
                 installed = true;
                 await Task.Delay(2000);
-                Close();
+                Hide();
+                new Form1().Show();
             }
             catch (Exception ex)
             {

@@ -14,12 +14,7 @@ namespace deneAI
             ApplicationConfiguration.Initialize();
             //appContext = new ApplicationContext(new Ollama());
             //appContext.MainForm!.FormClosed += (s, e) => new Form1().Show();
-            var mainForm = new Ollama();
-            appContext = new ApplicationContext(mainForm);
-
-            mainForm.FormClosing += (s, e) => { if (e.Cancel) return; Form1 f = new(); appContext.MainForm = f; f.Show(); };
-
-            Application.Run(appContext);
+           Application.Run(new startscreen());
         }
     }
 }
