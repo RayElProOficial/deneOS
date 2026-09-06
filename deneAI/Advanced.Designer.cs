@@ -36,8 +36,9 @@ partial class Advanced
         tableLayoutPanel1 = new TableLayoutPanel();
         panel1 = new Panel();
         tableLayoutPanel2 = new TableLayoutPanel();
-        btnClear = new Button();
+        label2 = new Label();
         label1 = new Label();
+        btnClear = new Button();
         tableLayoutPanel1.SuspendLayout();
         panel1.SuspendLayout();
         tableLayoutPanel2.SuspendLayout();
@@ -107,11 +108,13 @@ partial class Advanced
         // tableLayoutPanel2
         // 
         tableLayoutPanel2.BackColor = SystemColors.ControlDarkDark;
-        tableLayoutPanel2.ColumnCount = 2;
-        tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 90F));
-        tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 10F));
-        tableLayoutPanel2.Controls.Add(btnClear, 1, 0);
+        tableLayoutPanel2.ColumnCount = 3;
+        tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 81.8181839F));
+        tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 9.090909F));
+        tableLayoutPanel2.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 9.090909F));
+        tableLayoutPanel2.Controls.Add(label2, 1, 0);
         tableLayoutPanel2.Controls.Add(label1, 0, 0);
+        tableLayoutPanel2.Controls.Add(btnClear, 2, 0);
         tableLayoutPanel2.Dock = DockStyle.Top;
         tableLayoutPanel2.Location = new Point(0, 0);
         tableLayoutPanel2.Name = "tableLayoutPanel2";
@@ -120,20 +123,20 @@ partial class Advanced
         tableLayoutPanel2.Size = new Size(659, 27);
         tableLayoutPanel2.TabIndex = 4;
         // 
-        // btnClear
+        // label2
         // 
-        btnClear.BackColor = SystemColors.ControlDark;
-        btnClear.BackgroundImage = Properties.Resources.icons8_clear_24;
-        btnClear.BackgroundImageLayout = ImageLayout.Center;
-        btnClear.Dock = DockStyle.Fill;
-        btnClear.FlatStyle = FlatStyle.Flat;
-        btnClear.Location = new Point(593, 0);
-        btnClear.Margin = new Padding(0);
-        btnClear.Name = "btnClear";
-        btnClear.Size = new Size(66, 27);
-        btnClear.TabIndex = 1;
-        btnClear.UseVisualStyleBackColor = false;
-        btnClear.Click += btnClear_Click;
+        label2.BackColor = SystemColors.ControlDarkDark;
+        label2.Dock = DockStyle.Fill;
+        label2.Font = new Font("Segoe UI", 12F);
+        label2.ForeColor = Color.LightSkyBlue;
+        label2.Location = new Point(542, 0);
+        label2.Name = "label2";
+        label2.Padding = new Padding(10, 0, 0, 0);
+        label2.Size = new Size(53, 27);
+        label2.TabIndex = 3;
+        label2.Text = "Plus";
+        label2.TextAlign = ContentAlignment.MiddleLeft;
+        label2.Visible = false;
         // 
         // label1
         // 
@@ -144,10 +147,25 @@ partial class Advanced
         label1.Location = new Point(3, 0);
         label1.Name = "label1";
         label1.Padding = new Padding(10, 0, 0, 0);
-        label1.Size = new Size(587, 27);
+        label1.Size = new Size(533, 27);
         label1.TabIndex = 2;
         label1.Text = "deneAI Advanced";
         label1.TextAlign = ContentAlignment.MiddleLeft;
+        // 
+        // btnClear
+        // 
+        btnClear.BackColor = SystemColors.ControlDark;
+        btnClear.BackgroundImage = Properties.Resources.icons8_clear_24;
+        btnClear.BackgroundImageLayout = ImageLayout.Center;
+        btnClear.Dock = DockStyle.Fill;
+        btnClear.FlatStyle = FlatStyle.Flat;
+        btnClear.Location = new Point(598, 0);
+        btnClear.Margin = new Padding(0);
+        btnClear.Name = "btnClear";
+        btnClear.Size = new Size(61, 27);
+        btnClear.TabIndex = 1;
+        btnClear.UseVisualStyleBackColor = false;
+        btnClear.Click += btnClear_Click;
         // 
         // Advanced
         // 
@@ -177,6 +195,7 @@ partial class Advanced
     private TableLayoutPanel tableLayoutPanel1;
     private Panel panel1;
     private TableLayoutPanel tableLayoutPanel2;
-    private Button btnClear;
     private Label label1;
+    private Label label2;
+    private Button btnClear;
 }

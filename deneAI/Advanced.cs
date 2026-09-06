@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Text;
 using System.Text.Json;
@@ -11,6 +12,11 @@ namespace deneAI;
 
 public partial class Advanced : Form
 {
+    private static bool Plus
+    {
+        get;
+        set;
+    }
     public static HttpClient httpClient = new HttpClient();
     List<string> history = new List<string>();
     Dictionary<string, string> comandosSistema = new Dictionary<string, string>()
@@ -21,15 +27,48 @@ public partial class Advanced : Form
         { "CLEAR_CHAT", "CLEAR_CHAT" }
     };
 
-    public Advanced()
+    private readonly string? authCode;
+
+    public Advanced(string? authCode = null)
     {
         InitializeComponent();
+
+
         rtbChat.ReadOnly = true;
+
+        this.authCode = authCode;
+
+        if (!string.IsNullOrWhiteSpace(authCode))
+        {
+            Shown += async (_, _) =>
+            {
+                bool success =
+                    await ExchangeAuthCodeAsync(authCode);
+
+                if (success)
+                {
+                    MessageBox.Show(
+                        $"¡Sesión iniciada como {CurrentUser?.name}!",
+                        "deneAI",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information
+                    );
+                }
+            };
+        }
     }
 
     public class AiResponse
     {
-        public string response
+        public string? response
+        {
+            get; set;
+        }
+        public string? plan
+        {
+            get; set;
+        }
+        public bool plus
         {
             get; set;
         }
@@ -67,6 +106,26 @@ public partial class Advanced : Form
 
     private async void button1_Click(object sender, EventArgs e)
     {
+        if (string.IsNullOrWhiteSpace(SessionToken))
+        {
+            MessageBox.Show(
+                "Debes iniciar sesión para usar deneAI.",
+                "deneAI",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning
+            );
+
+            Process.Start("start https://repoficialx.xyz/auth/microsoft/deneai/login.php");
+
+            return;
+        }
+
+        httpClient.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue(
+                "Bearer",
+                SessionToken
+            );  
+        
         button1.Enabled = false;
         var prompt = txtPrompt.Text;
         txtPrompt.Clear();
@@ -119,7 +178,16 @@ public partial class Advanced : Form
             }
 
             var _response = result.response;
+            Plus = result.plus;
 
+            if (Plus)
+            {
+                label2.Show();
+            }
+            else
+            {
+                label2.Hide();
+            }
 
             if (_response.StartsWith("COMMAND:"))
             {
@@ -131,11 +199,11 @@ public partial class Advanced : Form
                     else
                         System.Diagnostics.Process.Start(ruta);
 
-                    //rtbChat.AppendText($"✅ Ejecutando comando: {cmdName}\n\n");
+                    //rtbChat.AppendText($"Ejecutando comando: {cmdName}\n\n");
                 }
                 else
                 {
-                    //rtbChat.AppendText($"⚠ Comando no reconocido: {cmdName}\n\n");
+                    //rtbChat.AppendText($"Comando no reconocido: {cmdName}\n\n");
                 }
             }
             else
@@ -179,4 +247,134 @@ public partial class Advanced : Form
 
         txtPrompt.Focus();
     }
+
+    private async Task<bool> ExchangeAuthCodeAsync(string code)
+    {
+        try
+        {
+            var data = new
+            {
+                code = code
+            };
+
+            string json = JsonSerializer.Serialize(data);
+
+            using var content = new StringContent(
+                json,
+                Encoding.UTF8,
+                "application/json"
+            );
+
+            using var response = await httpClient.PostAsync(
+                "https://repoficialx.xyz/auth/deneai/exchange.php",
+                content
+            );
+
+            if (!response.IsSuccessStatusCode)
+            {
+                MessageBox.Show(
+                    $"No se pudo iniciar sesión.\n\n" +
+                    $"Servidor: {response.StatusCode}",
+                    "deneAI",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+
+                return false;
+            }
+
+            string jsonResponse =
+                await response.Content.ReadAsStringAsync();
+
+            var result =
+                JsonSerializer.Deserialize<AuthResponse>(jsonResponse);
+
+            if (
+                result == null ||
+                !result.success ||
+                string.IsNullOrWhiteSpace(result.token)
+            )
+            {
+                MessageBox.Show(
+                    "El servidor no devolvió una sesión válida.",
+                    "deneAI",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+
+                return false;
+            }
+
+            // Guardamos el token en memoria por ahora.
+            // En el siguiente paso lo almacenaremos de forma
+            // segura para conservar la sesión entre reinicios.
+            SessionToken = result.token;
+
+            CurrentUser = result.user;
+
+            return true;
+        }
+        catch (HttpRequestException ex)
+        {
+            MessageBox.Show(
+                $"No se pudo conectar con deneAI.\n\n{ex.Message}",
+                "deneAI",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error
+            );
+
+            return false;
+        }
+        catch (JsonException ex)
+        {
+            MessageBox.Show(
+                $"Respuesta inválida del servidor.\n\n{ex.Message}",
+                "deneAI",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error
+            );
+
+            return false;
+        }
+    }
+    private string? SessionToken;
+
+    private UserInfo? CurrentUser;
+
+    public class AuthResponse
+    {
+        public bool success
+        {
+            get; set;
+        }
+        public string? token
+        {
+            get; set;
+        }
+        public UserInfo? user
+        {
+            get; set;
+        }
+    }
+
+    public class UserInfo
+    {
+        public int id
+        {
+            get; set;
+        }
+        public string? email
+        {
+            get; set;
+        }
+        public string? name
+        {
+            get; set;
+        }
+        public string? picture
+        {
+            get; set;
+        }
+    }
+    
 }
